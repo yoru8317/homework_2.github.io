@@ -157,7 +157,7 @@ function reset_play(){
 
   turn_f(null);
   turn = 1;//default value is set to '1'
-
+	var board = document.getElementsByTagName('td')
   for(var i = 0; i < 9; i++){
     document.getElementById(table_ids[i]).innerHTML = table_ids[i];
   }
@@ -179,88 +179,100 @@ The method should do all the things as stated in rule 2.
 8. After all the moves have exhausted, you're not required to display any message. (It should be obvious to Reset play.)<br/>
 
 */
-function play() {
-	var flag = false; //looking for a valid move using the user's input
-  var move_text_id = document.getElementById("move_text_id");
-  var turn = document.getElementById("turn_info");
+//check if cell is empty
+function emptyCell(n){
+	for (var i = 0; i < table_ids.length; i++){
+		if (table_ids[i] == n){
+			if(board_state[i] < 0){
+				return true
+			}else{
+				return false
+			}
+		}
+	}
+}
 
-  if(started = false){
-    var changeInput = document.getElementById("move_text_id").value;
-    for (var i = 0; i < 9; i++){ //increment until intgrated array
-      console.log(changeInput);
-      flag = true;
-      board_state[i] = whose_move();
-
-      if(whose_move()==1){
-        table_ids[i] = "X";
-        document.getElementById(change_Input).innerHTML = "X";
-        turn_info.innerHTML = "Turn for : " + "O".bold();
-      }
-      else{
-        table_ids[i] = "O";
-        document.getElementById(changeInput).innerHTML = "O";
-        turn.innerHTML = "Turn for : " + "X".bold();
-      }
-      toggle_move();
-
-      break;
-    }
-    if (i == 8){
-      console.log("no matches");
-      if (move_text_id.hasAttribute("disabled")){
-        alert("no more moves left");
-      }
-      else {
-        alert("That is not valid");
-      }
-    }
-  }
-  if(valid){
-    var winningCombos = [
-  [0, 1, 2],
-	[3, 4, 5],
-	[6, 7, 8],
-	[0, 3, 6],
-	[1, 4, 7],
-	[2, 5, 8],
-	[0, 4, 8],
-	[2, 4, 6]
+//getting the place of the mark right
+function placeMarker(n){
+	var board = document.getElementsByTagName('td')
+	var flag;
+	if(turn % 2 == 0){
+		flag = 'O'
+	}else{
+		flag = 'X'
+	}
+	for (var i = 0; i < board.length; i++){
+		if (table_ids[i] == n){
+			board[i].innerHTML = flag;
+			board_state[i] = turn % 2;
+			return;
+		}
+	}
+}
+// this states the winnin combination of the game
+var winningCombo = [
+[0, 1, 2],
+[3, 4, 5],
+[6, 7, 8],
+[0, 3, 6],
+[1, 4, 7],
+[2, 5, 8],
+[0, 4, 8],
+[2, 4, 6]
 ]
-    for(var i = 0; i < 8; i++){
-      console.log('combo:' + i + ' = ' + winningCombos[i]);
-      var j = 0;
-      var m = board_state[winningCombos[i][j]];
-      if(m >= 0){
-        j++;
-        while(j < winningCombos[i].length){
-          if(mode == board_state[winningCombos[i][j]]){
-            j++;
-          }else{
-            break;
-          }
-        }
-        if(j == winningCombos[i].length){
-          if(turn%2 == 0){
-            return "Player 2 Wins";
-          }else{
-            return "Player 1 Wins";
-          }
-        }
-      }//check to see if someone won
-      if(valid){
-        for (var i = 0; i < 9; i++){
-          if (board_state[i] == -1) {
-            console.log("have open space");
-            return;
-          }
-        }
-        console.log("no spaces");
-        turn_f.innerHTML = "There's no more open space. ";
-        move_text_id.setAttribute("disabled", true);
-      }// checks to see if the board is full.
-    }
 
-  }
+// check to see if the player has won
+function checkwin(){
+	for (var i = 0; i < winningCombo.length; i++){
+		console.log('combo:' + i + ' = ' + winningCombo[i]);
+		var j = 0;
+		var mark = board_state[winningCombo[i][j]];
+		if (mark >= 0){
+			j++;
+			while (j < winningCombo[i].length){
+				if(mark == board_state [winningCombo [i][j]]){
+					j++;
+				}
+				else{
+					break;
+				}
+			}
+			if (j == winningCombo[i].length){
+				if (turn%2 == 0){
+					return 'Player 2 wins'
+				}else{
+					return 'Player 1 wins'
+				}
+			}
+		}
+	}
+	return false;
+}
+
+function play(){
+	if(game_started()){
+		move = document.getElementById('move_text_id')
+		if (move.value.match(/[A-C][1-3]/g)){
+			if(emptyCell(move.value)){
+				console.log('smart move, turn:' + turn);
+				placeMarker(move.value);
+				var winner = checkwin();
+				if(winner){
+					alert(winner)
+					reset_play()
+				}
+				turn++;
+				turn_f(1)
+			}else{
+				console.log('not the right move, cell is full');
+			}
+		}
+		else{
+			console.log('invalid');
+		}
+	}else{
+		alert('Game didn\'t even started yet');
+	}
 }
 
 /*
